@@ -2,16 +2,36 @@ import org.javatuples.Triplet;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 
 class InvertedIndex {
 
-    private static HashMap<String, HashMap<Integer, HashMap<String, Integer>>> invertedIndex = new HashMap<>();
+    // Map the token with numbers and store the numbers instead of the token into the file
+    private static Long wordCount = 0L;
+    private static HashMap<String, Long> wordMap = new HashMap<>();
+
+    static HashMap<Long, HashMap<Integer, HashMap<String, Integer>>> invertedIndex = new HashMap<>();
     static HashMap<Integer, Triplet<String, Integer, String>> docMetadataMap = new HashMap<>();
+
+    private static Long getWordIndex(String word) {
+        if (wordMap.containsKey(word)) {
+            return wordMap.get(word);
+        }
+
+        Long wordIndex = wordCount;
+        wordMap.put(word, wordCount);
+        wordCount++;
+
+        return wordIndex;
+    }
 
     static void createInvertedIndex(Integer docId, String word, String indexChar) {
 
-        HashMap<Integer, HashMap<String, Integer>> wordMap = invertedIndex.get(word);
+        Long wordIndex = getWordIndex(word);
+
+        HashMap<Integer, HashMap<String, Integer>> wordMap = invertedIndex.get(wordIndex);
         if (wordMap != null) {
             HashMap<String, Integer> wordCountMap = wordMap.get(docId);
             if (wordCountMap != null) {
@@ -28,7 +48,7 @@ class InvertedIndex {
             HashMap<String, Integer> wordCountMap = new HashMap<>();
             wordCountMap.put(indexChar, 1);
             newWordMap.put(docId, wordCountMap);
-            invertedIndex.put(word, newWordMap);
+            invertedIndex.put(wordIndex, newWordMap);
         }
 
     }
@@ -37,13 +57,17 @@ class InvertedIndex {
         try {
             BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(outputFilePath));
 
-            for (String token : invertedIndex.keySet()) {
+            // Sort the invertedIndex by keys before writing to file
+            ArrayList<Long> sortedKeySet = new ArrayList<>(invertedIndex.keySet());
+            Collections.sort(sortedKeySet);
+
+            for (Long wordIndex : sortedKeySet) {
                 StringBuilder line = new StringBuilder();
-                line.append(token).append(":");
-                for (Integer docId : invertedIndex.get(token).keySet()) {
+                line.append(wordIndex.toString()).append(":");
+                for (Integer docId : invertedIndex.get(wordIndex).keySet()) {
                     line.append(docId).append("-");
-                    for (String idx : invertedIndex.get(token).get(docId).keySet()) {
-                        line.append(idx).append(invertedIndex.get(token).get(docId).get(idx));
+                    for (String idx : invertedIndex.get(wordIndex).get(docId).keySet()) {
+                        line.append(idx).append(invertedIndex.get(wordIndex).get(docId).get(idx));
                     }
                     line.append("|");
                 }
@@ -58,13 +82,13 @@ class InvertedIndex {
     }
 
     static void printInvertedIndex() {
-        for (String token : invertedIndex.keySet()) {
+        for (Long wordIndex : invertedIndex.keySet()) {
             StringBuilder line = new StringBuilder();
-            line.append(token).append(":");
-            for (Integer docId : invertedIndex.get(token).keySet()) {
+            line.append(wordIndex.toString()).append(":");
+            for (Integer docId : invertedIndex.get(wordIndex).keySet()) {
                 line.append(docId).append("-");
-                for (String idx : invertedIndex.get(token).get(docId).keySet()) {
-                    line.append(idx).append(invertedIndex.get(token).get(docId).get(idx));
+                for (String idx : invertedIndex.get(wordIndex).get(docId).keySet()) {
+                    line.append(idx).append(invertedIndex.get(wordIndex).get(docId).get(idx));
                 }
                 line.append("|");
             }
