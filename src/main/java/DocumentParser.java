@@ -2,6 +2,8 @@ import org.javatuples.Triplet;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -12,6 +14,8 @@ class DocumentParser {
     private int docId;
     private String text;
 
+    private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+
     DocumentParser(Document document, HashMap<String, Pattern> regexPatterns) {
 
         this.regexPatterns = regexPatterns;
@@ -19,10 +23,10 @@ class DocumentParser {
         this.docId = document.getId();
         this.text = document.getText();
 
-        Triplet<String, Integer, String> docDetailsTriplet
-                = Triplet.with(document.getTitle(), document.getContributorId(), document.getContributorUsername());
+//        Triplet<String, Integer, String> docDetailsTriplet
+//                = Triplet.with(document.getTitle(), document.getContributorId(), document.getContributorUsername());
 
-        InvertedIndex.docMetadataMap.put(docId, docDetailsTriplet);
+//        InvertedIndex.docMetadataMap.put(docId, docDetailsTriplet);
 
     }
 
@@ -130,6 +134,8 @@ class DocumentParser {
         for (int i = 0; i < textBodyTokens.size(); i++) {
             InvertedIndex.createInvertedIndex(docId, textBodyTokens.get(i), "t");
         }
+
+        LOGGER.log(Level.INFO, "Page : " + docId);
 
     }
 
