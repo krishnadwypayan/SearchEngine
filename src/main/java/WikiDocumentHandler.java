@@ -14,6 +14,9 @@ public class WikiDocumentHandler extends DefaultHandler {
     private boolean contributorFlag = false;
     private boolean revisionFlag = false;
 
+    private static int pageCount;
+    private static int outputFileCount;
+
     private CharArrayWriter contents = new CharArrayWriter();
 
     WikiDocumentHandler(HashMap<String, Pattern> regexPatterns) {
@@ -23,7 +26,18 @@ public class WikiDocumentHandler extends DefaultHandler {
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes)
             throws SAXException {
+
+        if (pageCount == 5000) {
+            InvertedIndex.writeInvertedIndex(SearchEngineMain.OUTPUT_FILE_PATH + outputFileCount + ".txt");
+            System.out.println("Index file_" + outputFileCount + "created");
+            outputFileCount++;
+            InvertedIndex.invertedIndex.clear();
+            pageCount = 0;
+//            throw new SAXException("1000000 files have been processed!\n");
+        }
+
         if (qName.equalsIgnoreCase("page")) {
+            pageCount++;
             this.document = new Document();
         }
         else if (qName.equalsIgnoreCase("contributor")) {
