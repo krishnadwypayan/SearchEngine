@@ -9,8 +9,10 @@ import java.util.regex.Pattern;
 
 public class SearchEngineMain {
 
-    private static final String SMALL_WIKI_FILE_NAME = "/Users/krishnadwypayan/Documents/IIIT/IRE/WikipediaSearchEngine/res/small_wiki.xml";
-    private static final String WIKI_FILE_NAME = "/Users/krishnadwypayan/Documents/IIIT/IRE/WikipediaSearchEngine/res/wiki-search-small.xml";
+//    private static final String SMALL_WIKI_FILE_NAME = "/Users/krishnadwypayan/Documents/IIIT/IRE/WikipediaSearchEngine/res/small_wiki.xml";
+//    private static final String WIKI_FILE_NAME = "/Users/krishnadwypayan/Documents/IIIT/IRE/WikipediaSearchEngine/res/wiki-search-small.xml";
+    private static final String WIKI_FILE_NAME_PATH = "/Volumes/KrishnaDwypayan_HD/IIIT/IRE/full_wiki.xml";
+    static final String OUTPUT_FILE_PATH = "/Volumes/KrishnaDwypayan_HD/IIIT/IRE/Output/output";
 
     private static HashMap<String, Pattern> regexPatterns;
 
@@ -41,7 +43,7 @@ public class SearchEngineMain {
 
             SAXParser saxParser = saxParserFactory.newSAXParser();
             WikiDocumentHandler handler = new WikiDocumentHandler(regexPatterns);
-            saxParser.parse(WIKI_FILE_NAME, handler);
+            saxParser.parse(WIKI_FILE_NAME_PATH, handler);
 
         } catch (ParserConfigurationException | SAXException | IOException e) {
             e.printStackTrace();
@@ -50,7 +52,7 @@ public class SearchEngineMain {
         long end = System.currentTimeMillis();
         System.out.println(end - start);
 
-        InvertedIndex.writeInvertedIndex("/Users/krishnadwypayan/Documents/IIIT/IRE/WikipediaSearchEngine/res/inverted_index.txt");
+//        InvertedIndex.writeInvertedIndex(OUTPUT_FILE_PATH);
 //        InvertedIndex.printInvertedIndex();
     }
 
