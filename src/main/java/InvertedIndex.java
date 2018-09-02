@@ -20,18 +20,18 @@ class InvertedIndex {
             return wordMap.get(word);
         }
 
-        Long wordIndex = wordCount;
+        Long termId = wordCount;
         wordMap.put(word, wordCount);
         wordCount++;
 
-        return wordIndex;
+        return termId;
     }
 
     static void createInvertedIndex(Integer docId, String word, String indexChar) {
 
-        Long wordIndex = getWordIndex(word);
+        Long termId = getWordIndex(word);
 
-        HashMap<Integer, HashMap<String, Integer>> wordMap = invertedIndex.get(wordIndex);
+        HashMap<Integer, HashMap<String, Integer>> wordMap = invertedIndex.get(termId);
         if (wordMap != null) {
             HashMap<String, Integer> wordCountMap = wordMap.get(docId);
             if (wordCountMap != null) {
@@ -48,7 +48,7 @@ class InvertedIndex {
             HashMap<String, Integer> wordCountMap = new HashMap<>();
             wordCountMap.put(indexChar, 1);
             newWordMap.put(docId, wordCountMap);
-            invertedIndex.put(wordIndex, newWordMap);
+            invertedIndex.put(termId, newWordMap);
         }
 
     }
@@ -61,19 +61,21 @@ class InvertedIndex {
             ArrayList<Long> sortedKeySet = new ArrayList<>(invertedIndex.keySet());
             Collections.sort(sortedKeySet);
 
-            for (Long wordIndex : sortedKeySet) {
+            for (Long termId : sortedKeySet) {
                 StringBuilder line = new StringBuilder();
-                line.append(wordIndex.toString()).append(":");
-                for (Integer docId : invertedIndex.get(wordIndex).keySet()) {
+                line.append(termId.toString()).append(":");
+                for (Integer docId : invertedIndex.get(termId).keySet()) {
                     line.append(docId).append("-");
-                    for (String idx : invertedIndex.get(wordIndex).get(docId).keySet()) {
-                        line.append(idx).append(invertedIndex.get(wordIndex).get(docId).get(idx));
+                    for (String idx : invertedIndex.get(termId).get(docId).keySet()) {
+                        line.append(idx).append(invertedIndex.get(termId).get(docId).get(idx));
                     }
                     line.append("|");
                 }
                 line.append("\n");
                 bufferedWriter.write(line.toString());
             }
+
+            bufferedWriter.close();
 
         }
         catch (Exception e) {
@@ -82,13 +84,13 @@ class InvertedIndex {
     }
 
     static void printInvertedIndex() {
-        for (Long wordIndex : invertedIndex.keySet()) {
+        for (Long termId : invertedIndex.keySet()) {
             StringBuilder line = new StringBuilder();
-            line.append(wordIndex.toString()).append(":");
-            for (Integer docId : invertedIndex.get(wordIndex).keySet()) {
+            line.append(termId.toString()).append(":");
+            for (Integer docId : invertedIndex.get(termId).keySet()) {
                 line.append(docId).append("-");
-                for (String idx : invertedIndex.get(wordIndex).get(docId).keySet()) {
-                    line.append(idx).append(invertedIndex.get(wordIndex).get(docId).get(idx));
+                for (String idx : invertedIndex.get(termId).get(docId).keySet()) {
+                    line.append(idx).append(invertedIndex.get(termId).get(docId).get(idx));
                 }
                 line.append("|");
             }
