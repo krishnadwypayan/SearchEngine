@@ -27,15 +27,6 @@ public class WikiDocumentHandler extends DefaultHandler {
     public void startElement(String uri, String localName, String qName, Attributes attributes)
             throws SAXException {
 
-        if (pageCount == 5000) {
-            InvertedIndex.writeInvertedIndex(SearchEngineMain.OUTPUT_FILE_PATH + outputFileCount + ".txt");
-            System.out.println("Index file_" + outputFileCount + "created");
-            outputFileCount++;
-            InvertedIndex.invertedIndex.clear();
-            pageCount = 0;
-//            throw new SAXException("1000000 files have been processed!\n");
-        }
-
         if (qName.equalsIgnoreCase("page")) {
             pageCount++;
             this.document = new Document();
@@ -48,6 +39,8 @@ public class WikiDocumentHandler extends DefaultHandler {
         }
 
         contents.reset();
+
+//        throw new SAXException();
 
     }
 
@@ -73,9 +66,21 @@ public class WikiDocumentHandler extends DefaultHandler {
             revisionFlag = false;
         }
         else if (qName.equalsIgnoreCase("page")) {
-//            System.out.println(document.toString());
             DocumentParser documentParser = new DocumentParser(document, regexPatterns);
             documentParser.parseDocument();
+        }
+
+        // For every 5000 page tags, we create an index and dump the index to a file
+        if (pageCount == 5000) {
+            InvertedIndex.writeInvertedIndex(SearchEngineMain.OUTPUT_FILE_PATH + "output" + outputFileCount + ".txt");
+            System.out.println("Index file_" + outputFileCount + "created");
+            outputFileCount++;
+            InvertedIndex.invertedIndex.clear();
+            pageCount = 0;
+
+//            if (outputFileCount == 20) {
+//                throw new SAXException("20 index files have been created!\n");
+//            }
         }
     }
 

@@ -3,16 +3,24 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 public class SearchEngineMain {
 
 //    private static final String SMALL_WIKI_FILE_NAME = "/Users/krishnadwypayan/Documents/IIIT/IRE/WikipediaSearchEngine/res/small_wiki.xml";
+
 //    private static final String WIKI_FILE_NAME = "/Users/krishnadwypayan/Documents/IIIT/IRE/WikipediaSearchEngine/res/wiki-search-small.xml";
+
     private static final String WIKI_FILE_NAME_PATH = "/Volumes/KrishnaDwypayan_HD/IIIT/IRE/full_wiki.xml";
-    static final String OUTPUT_FILE_PATH = "/Volumes/KrishnaDwypayan_HD/IIIT/IRE/Output/output";
+
+    static final String OUTPUT_FILE_PATH = "/Volumes/KrishnaDwypayan_HD/IIIT/IRE/Output/";
+
+    // This will maintain the level where the index files are to be merged
+    static int level;
 
     private static HashMap<String, Pattern> regexPatterns;
 
@@ -32,7 +40,7 @@ public class SearchEngineMain {
 
     }
 
-    public static void main(String...args) {
+    public static void main(String...args) throws IOException {
 
         long start = System.currentTimeMillis();
 
@@ -52,8 +60,14 @@ public class SearchEngineMain {
         long end = System.currentTimeMillis();
         System.out.println(end - start);
 
-//        InvertedIndex.writeInvertedIndex(OUTPUT_FILE_PATH);
-//        InvertedIndex.printInvertedIndex();
+        // Merge the indexe files created into a single index file
+        while (Objects.requireNonNull(new File(OUTPUT_FILE_PATH).listFiles()).length != 1) {
+            MergeInvertedIndex mergeInvertedIndex = new MergeInvertedIndex();
+            mergeInvertedIndex.merge(OUTPUT_FILE_PATH);
+            MergeInvertedIndex.mergedIndexCount = 0;
+            level++;
+        }
+
     }
 
 }
