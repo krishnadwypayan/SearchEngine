@@ -12,22 +12,17 @@ class DocumentParser {
     private HashMap<String, Pattern> regexPatterns;
 
     private int docId;
+    private String title;
     private String text;
 
     private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
     DocumentParser(Document document, HashMap<String, Pattern> regexPatterns) {
-
         this.regexPatterns = regexPatterns;
 
         this.docId = document.getId();
+        this.title = document.getTitle();
         this.text = document.getText();
-
-//        Triplet<String, Integer, String> docDetailsTriplet
-//                = Triplet.with(document.getTitle(), document.getContributorId(), document.getContributorUsername());
-
-//        InvertedIndex.docMetadataMap.put(docId, docDetailsTriplet);
-
     }
 
     private ArrayList<String> tokenize(String text) {
@@ -63,11 +58,17 @@ class DocumentParser {
 
     void parseDocument() {
 
+        ArrayList<String> titleTokens;
         ArrayList<String> externalLinksTokens;
         ArrayList<String> infoboxTokens;
         ArrayList<String> referenceTokens;
         ArrayList<String> categoryTokens;
         ArrayList<String> textBodyTokens;
+
+        titleTokens = tokenize(title);
+        for (String titleToken : titleTokens) {
+            InvertedIndex.createInvertedIndex(docId, titleToken, "t");
+        }
 
         Matcher infoboxMatcher = regexPatterns.get("infobox").matcher(text);
         StringBuilder infoboxTexts = new StringBuilder();
@@ -132,7 +133,7 @@ class DocumentParser {
 
         textBodyTokens = tokenize(text);
         for (int i = 0; i < textBodyTokens.size(); i++) {
-            InvertedIndex.createInvertedIndex(docId, textBodyTokens.get(i), "t");
+            InvertedIndex.createInvertedIndex(docId, textBodyTokens.get(i), "b");
         }
 
         LOGGER.log(Level.INFO, "Page : " + docId);

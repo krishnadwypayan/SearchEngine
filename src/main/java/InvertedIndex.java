@@ -1,5 +1,3 @@
-import org.javatuples.Triplet;
-
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.util.ArrayList;
@@ -13,7 +11,6 @@ class InvertedIndex {
     private static HashMap<String, Long> wordMap = new HashMap<>();
 
     static HashMap<Long, HashMap<Integer, HashMap<String, Integer>>> invertedIndex = new HashMap<>();
-    static HashMap<Integer, Triplet<String, Integer, String>> docMetadataMap = new HashMap<>();
 
     private static Long getWordIndex(String word) {
         if (wordMap.containsKey(word)) {
@@ -38,7 +35,7 @@ class InvertedIndex {
                 wordCountMap.merge(indexChar, 1, (a, b) -> a + b);
             }
             else {
-                HashMap<String, Integer> newWordCountMap = new HashMap<String, Integer>();
+                HashMap<String, Integer> newWordCountMap = new HashMap<>();
                 newWordCountMap.put(indexChar, 1);
                 wordMap.put(docId, newWordCountMap);
             }
@@ -66,6 +63,14 @@ class InvertedIndex {
                 line.append(termId.toString()).append(":");
                 for (Integer docId : invertedIndex.get(termId).keySet()) {
                     line.append(docId).append("-");
+
+                    // Calculate the frequency of the term in the document and append it to the line
+                    int termFreq = 0;
+                    for (String idx : invertedIndex.get(termId).get(docId).keySet()) {
+                        termFreq += invertedIndex.get(termId).get(docId).get(idx);
+                    }
+                    line.append(termFreq + "-");
+
                     for (String idx : invertedIndex.get(termId).get(docId).keySet()) {
                         line.append(idx).append(invertedIndex.get(termId).get(docId).get(idx));
                     }

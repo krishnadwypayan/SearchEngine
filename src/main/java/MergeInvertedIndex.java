@@ -6,6 +6,7 @@ import java.util.PriorityQueue;
 public class MergeInvertedIndex {
 
     private static final String MERGE_INDEX_FILE_PATH = "/Volumes/KrishnaDwypayan_HD/IIIT/IRE/Output/merged_index_";
+
     static int mergedIndexCount;
 
     private class QueueNode implements Comparable<QueueNode> {
