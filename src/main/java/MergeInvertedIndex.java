@@ -5,8 +5,6 @@ import java.util.PriorityQueue;
 
 public class MergeInvertedIndex {
 
-    private static final String MERGE_INDEX_FILE_PATH = "/Volumes/KrishnaDwypayan_HD/IIIT/IRE/Output/merged_index_";
-
     static int mergedIndexCount;
 
     private class QueueNode implements Comparable<QueueNode> {
@@ -100,7 +98,7 @@ public class MergeInvertedIndex {
 
                 if (fileCounter == 10) {
                     // Call merge here
-                    BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(MERGE_INDEX_FILE_PATH + mergedIndexCount + "_level_" + SearchEngineMain.level + ".txt", true));
+                    BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(SearchEngineMain.MERGE_INDEX_PATH + mergedIndexCount + "_level_" + SearchEngineMain.level + ".txt", true));
                     mergeHandler(filePointersList, bufferedWriter);
                     fileCounter = 0;
                     mergedIndexCount++;
@@ -118,7 +116,7 @@ public class MergeInvertedIndex {
 
             }
 
-            BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(MERGE_INDEX_FILE_PATH + mergedIndexCount + "_level_" + SearchEngineMain.level + ".txt", true));
+            BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(SearchEngineMain.MERGE_INDEX_PATH + mergedIndexCount + "_level_" + SearchEngineMain.level + ".txt", true));
             mergeHandler(filePointersList, bufferedWriter);
         }
 

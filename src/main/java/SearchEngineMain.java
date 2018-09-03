@@ -19,6 +19,14 @@ public class SearchEngineMain {
 
     static final String OUTPUT_FILE_PATH = "/Volumes/KrishnaDwypayan_HD/IIIT/IRE/Output/";
 
+    static final String MERGE_INDEX_PATH = "/Volumes/KrishnaDwypayan_HD/IIIT/IRE/Index/";
+
+    static final String SPLIT_INDEX_PATH = "/Volumes/KrishnaDwypayan_HD/IIIT/IRE/Index Split Files/";
+
+    static final String OFFSETS_PATH = "/Volumes/KrishnaDwypayan_HD/IIIT/IRE/Offsets/";
+
+    static final String SECONDARY_INDEX_PATH = "/Volumes/KrishnaDwypayan_HD/IIIT/IRE/Secondary Indexes/";
+
     // This will maintain the level where the index files are to be merged
     static int level;
 
@@ -60,13 +68,32 @@ public class SearchEngineMain {
         long end = System.currentTimeMillis();
         System.out.println(end - start);
 
-        // Merge the indexe files created into a single index file
-        while (Objects.requireNonNull(new File(OUTPUT_FILE_PATH).listFiles()).length != 1) {
+        // Merge the index files created into a single index file
+        while (Objects.requireNonNull(new File(MERGE_INDEX_PATH).listFiles()).length > 1) {
             MergeInvertedIndex mergeInvertedIndex = new MergeInvertedIndex();
             mergeInvertedIndex.merge(OUTPUT_FILE_PATH);
             MergeInvertedIndex.mergedIndexCount = 0;
             level++;
         }
+
+
+         // Split the merged index file into multiple files and create offsets for each index
+         // At index 0, we have the .DS_Store file
+        String indexFilePath = null;
+
+        File[] outputDirFileNames = new File(MERGE_INDEX_PATH).listFiles();
+        for (File file : outputDirFileNames) {
+            if (file.getName().contains(".DS_Store")) {
+                continue;
+            }
+            indexFilePath = file.getPath();
+            break;
+        }
+
+        // IndexFileHandler handles the splitting of merged index, creates the offset for each
+        // smaller index file and subsequently creates a secondary index for the offset files.
+        IndexFileHandler indexFileHandler = new IndexFileHandler();
+        indexFileHandler.splitIndexFile(indexFilePath);
 
     }
 
