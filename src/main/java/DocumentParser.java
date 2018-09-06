@@ -1,9 +1,6 @@
-import org.javatuples.Triplet;
-
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -15,7 +12,6 @@ class DocumentParser {
     private String title;
     private String text;
 
-    private static final Logger LOGGER = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
     DocumentParser(Document document, HashMap<String, Pattern> regexPatterns) {
         this.regexPatterns = regexPatterns;
@@ -30,7 +26,10 @@ class DocumentParser {
         ArrayList<String> tokens = new ArrayList<>();
 
         String regexBasic = "[\\*\\(\\)\\+\\|\\{\\}\\[\\]!\"\\;\'<>,\\\n]";
+        String regexUrls = "[http:// | www\\. | http://www\\. | https://www\\. | https://]";
         text = text.replaceAll(regexBasic, " ");
+        text = text.replaceAll(regexUrls, " ");
+
         text = text.toLowerCase();
 
         StopWords stopWords = StopWords.getInstance();
@@ -41,7 +40,7 @@ class DocumentParser {
         for (String token : tokensOnSplit) {
             if (token.length() > 2 && !stopWords.isStopWord(token)) {
 
-                if (token.length() > 7 && token.substring(0, 7).equals("http://")) {
+                if ((token.length() > 7 && token.substring(0, 7).equals("http://")) || token.contains(".")) {
                     tokens.add(token);
                     continue;
                 }
@@ -57,6 +56,13 @@ class DocumentParser {
     }
 
     void parseDocument() {
+
+        // Write the title and docId to a file
+        try {
+            SearchEngineMain.bufferedWriterForDocTitleMap.write(docId + ":" + title + "\n");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         ArrayList<String> titleTokens;
         ArrayList<String> externalLinksTokens;
@@ -117,7 +123,13 @@ class DocumentParser {
         while (externalLinksMatcher.find()) {
             String externalLinksText = externalLinksMatcher.group();
             externalLinksIndex = externalLinksMatcher.start();
-            text = text.substring(0, externalLinksIndex);
+
+            try {
+                text = text.substring(0, externalLinksIndex);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
 
             externalLinksTokens = tokenize(externalLinksText);
             for (int i = 0; i < externalLinksTokens.size(); i++) {
@@ -136,7 +148,7 @@ class DocumentParser {
             InvertedIndex.createInvertedIndex(docId, textBodyTokens.get(i), "b");
         }
 
-        LOGGER.log(Level.INFO, "Page : " + docId);
+//        LOGGER.log(Level.INFO, "Page : " + docId);
 
     }
 
