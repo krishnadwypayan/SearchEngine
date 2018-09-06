@@ -12,10 +12,9 @@ public class WikiDocumentHandler extends DefaultHandler {
     private HashMap<String, Pattern> regexPatterns;
 
     private boolean contributorFlag = false;
-    private boolean revisionFlag = false;
 
     private static int pageCount;
-    private static int outputFileCount;
+    static int outputFileCount;
 
     private CharArrayWriter contents = new CharArrayWriter();
 
@@ -30,17 +29,16 @@ public class WikiDocumentHandler extends DefaultHandler {
         if (qName.equalsIgnoreCase("page")) {
             pageCount++;
             this.document = new Document();
+
+            // Count the total number of files for calculating tf-idf
+            SearchEngineMain.countPages++;
+            document.setId(SearchEngineMain.countPages);
         }
         else if (qName.equalsIgnoreCase("contributor")) {
             contributorFlag = true;
         }
-        else if (qName.equalsIgnoreCase("revision")) {
-            revisionFlag = true;
-        }
 
         contents.reset();
-
-//        throw new SAXException();
 
     }
 
@@ -48,9 +46,6 @@ public class WikiDocumentHandler extends DefaultHandler {
     public void endElement(String uri, String localName, String qName) throws SAXException {
         if (qName.equalsIgnoreCase("title")) {
             document.setTitle(contents.toString());
-        }
-        else if (!contributorFlag && !revisionFlag && qName.equalsIgnoreCase("id")) {
-            document.setId(Integer.parseInt(contents.toString()));
         }
         else if (qName.equalsIgnoreCase("text")) {
             document.setText(contents.toString());
@@ -62,25 +57,19 @@ public class WikiDocumentHandler extends DefaultHandler {
             document.setContributorId(Integer.parseInt(contents.toString()));
             contributorFlag = false;
         }
-        else if (qName.equalsIgnoreCase("revision")) {
-            revisionFlag = false;
-        }
         else if (qName.equalsIgnoreCase("page")) {
             DocumentParser documentParser = new DocumentParser(document, regexPatterns);
             documentParser.parseDocument();
         }
 
         // For every 5000 page tags, we create an index and dump the index to a file
-        if (pageCount == 5000) {
+        if (pageCount == 10000) {
             InvertedIndex.writeInvertedIndex(SearchEngineMain.OUTPUT_FILE_PATH + "output" + outputFileCount + ".txt");
-            System.out.println("Index file_" + outputFileCount + "created");
             outputFileCount++;
             InvertedIndex.invertedIndex.clear();
             pageCount = 0;
 
-//            if (outputFileCount == 20) {
-//                throw new SAXException("20 index files have been created!\n");
-//            }
+            System.out.println(SearchEngineMain.countPages);
         }
     }
 
