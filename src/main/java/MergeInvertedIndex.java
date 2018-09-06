@@ -96,7 +96,7 @@ public class MergeInvertedIndex {
                     continue;
                 }
 
-                if (fileCounter == 10) {
+                if (fileCounter == 100) {
                     // Call merge here
                     BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(SearchEngineMain.MERGE_INDEX_PATH + mergedIndexCount + "_level_" + SearchEngineMain.level + ".txt", true));
                     mergeHandler(filePointersList, bufferedWriter);
