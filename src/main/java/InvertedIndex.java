@@ -1,5 +1,6 @@
 import java.io.BufferedWriter;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -84,6 +85,25 @@ class InvertedIndex {
 
         }
         catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Write the wordMap to a file after the processing is done
+    static void writeWordMapToFile(String fileName) {
+        try {
+            BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(fileName));
+
+            // Cannot afford to use a different data structure for sorting the wordMap
+
+            // Write each entry of the TreeMap to the file
+            for (String key : wordMap.keySet()) {
+                bufferedWriter.write(key + ":" + wordMap.get(key) + "\n");
+            }
+
+            bufferedWriter.close();
+
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
