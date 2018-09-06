@@ -24,10 +24,15 @@ class IndexFileHandler {
             BufferedWriter bufferedWriterForSecondaryIndex = new BufferedWriter(new FileWriter(secondaryFileName, true));
 
             String line;
+            int lineCount = 0;
             while ((line = bufferedReader.readLine()) != null) {
 
+                lineCount++;
+
                 // Create smaller files of 30MB each from the large index file
-                if (new File(outputIndexFileName).length() > 30000000) {
+                if (lineCount > 50) {
+
+                    lineCount = 0;
 
                     // Close the current BufferedWriter
                     bufferedWriter.close();
@@ -50,12 +55,14 @@ class IndexFileHandler {
                 bufferedWriter.write(line + "\n");
             }
 
+            bufferedWriterForSecondaryIndex.close();
+
         } catch (java.io.IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void createOffsetFile(String indexFileName, String offsetFileName) {
+    static void createOffsetFile(String indexFileName, String offsetFileName) {
 
         try {
 
@@ -80,7 +87,7 @@ class IndexFileHandler {
      * Create the secondary index for the specified file
      * (Here, we create the secondary index for the offset files.)
      */
-    private void createSecondaryIndex(String fileName, BufferedWriter bufferedWriter) {
+    static void createSecondaryIndex(String fileName, BufferedWriter bufferedWriter) {
 
         try {
 
@@ -101,7 +108,7 @@ class IndexFileHandler {
             }
 
             lastTermId = Integer.parseInt(previousLine.split(":")[0]);
-            bufferedWriter.write(fileName + ":" + firstTermId + "-" + lastTermId);
+            bufferedWriter.write(fileName + ":" + firstTermId + "-" + lastTermId + "\n");
 
         } catch (IOException e) {
             e.printStackTrace();
