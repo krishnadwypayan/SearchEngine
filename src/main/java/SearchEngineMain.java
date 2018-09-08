@@ -3,10 +3,11 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Objects;
 import java.util.regex.Pattern;
 
 public class SearchEngineMain {
@@ -27,10 +28,25 @@ public class SearchEngineMain {
 
     static final String SECONDARY_INDEX_PATH = "/Volumes/KrishnaDwypayan_HD/IIIT/IRE/Secondary Indexes/";
 
+    static final String WORD_MAP_FILE_NAME = "/Volumes/KrishnaDwypayan_HD/IIIT/IRE/word_map.txt";
+
+    static final String SPLIT_WORD_MAP_PATH = "/Volumes/KrishnaDwypayan_HD/IIIT/IRE/Word Map Split Files/";
+
+    static final String WORD_MAP_FILES = "/Volumes/KrishnaDwypayan_HD/IIIT/IRE/Word Map Files/";
+
+    static final String DOCUMENT_TITLE_PATH = "/Volumes/KrishnaDwypayan_HD/IIIT/IRE/doc_title_map.txt";
+
+    static final String DOC_TITLE_SPLIT_FILES = "/Volumes/KrishnaDwypayan_HD/IIIT/IRE/Doc Title Split Files/";
+
     // This will maintain the level where the index files are to be merged
     static int level;
 
+    // this is the count of all the pages in the corpus (To be used for calculating tf-idf)
+    static int countPages;
+
     private static HashMap<String, Pattern> regexPatterns;
+
+    static BufferedWriter bufferedWriterForDocTitleMap;
 
     private static void makePatterns() {
 
@@ -52,10 +68,12 @@ public class SearchEngineMain {
 
         long start = System.currentTimeMillis();
 
-        SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
+         bufferedWriterForDocTitleMap = new BufferedWriter(new FileWriter(DOCUMENT_TITLE_PATH));
 
+        makePatterns();
+
+        SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
         try {
-            makePatterns();
 
             SAXParser saxParser = saxParserFactory.newSAXParser();
             WikiDocumentHandler handler = new WikiDocumentHandler(regexPatterns);
@@ -64,18 +82,26 @@ public class SearchEngineMain {
         } catch (ParserConfigurationException | SAXException | IOException e) {
             e.printStackTrace();
         }
+//
+        // The last set of files need to be written to an index file
+        InvertedIndex.writeInvertedIndex(OUTPUT_FILE_PATH + "output" + WikiDocumentHandler.outputFileCount + ".txt");
+        InvertedIndex.invertedIndex.clear();
+        System.out.println(SearchEngineMain.countPages);
+//
+        // Close the bufferedWriterForDocTitleMap
+        bufferedWriterForDocTitleMap.close();
 
-        long end = System.currentTimeMillis();
-        System.out.println(end - start);
+        // Create the wordMap file
+        InvertedIndex.writeWordMapToFile(WORD_MAP_FILE_NAME);
 
         // Merge the index files created into a single index file
-        while (Objects.requireNonNull(new File(MERGE_INDEX_PATH).listFiles()).length > 1) {
-            MergeInvertedIndex mergeInvertedIndex = new MergeInvertedIndex();
-            mergeInvertedIndex.merge(OUTPUT_FILE_PATH);
-            MergeInvertedIndex.mergedIndexCount = 0;
-            level++;
-        }
-
+        MergeInvertedIndex mergeInvertedIndex = new MergeInvertedIndex();
+        mergeInvertedIndex.merge(OUTPUT_FILE_PATH);
+        MergeInvertedIndex.mergedIndexCount = 0;
+        level++;
+//
+        // Merge the merged files
+        mergeInvertedIndex.merge(MERGE_INDEX_PATH);
 
          // Split the merged index file into multiple files and create offsets for each index
          // At index 0, we have the .DS_Store file
@@ -94,6 +120,9 @@ public class SearchEngineMain {
         // smaller index file and subsequently creates a secondary index for the offset files.
         IndexFileHandler indexFileHandler = new IndexFileHandler();
         indexFileHandler.splitIndexFile(indexFilePath);
+
+        long end = System.currentTimeMillis();
+        System.out.println(end - start);
 
     }
 
