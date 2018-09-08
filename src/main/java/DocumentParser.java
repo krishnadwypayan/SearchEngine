@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.regex.Matcher;
@@ -21,14 +22,14 @@ class DocumentParser {
         this.text = document.getText();
     }
 
-    private ArrayList<String> tokenize(String text) {
+    static ArrayList<String> tokenize(String text) {
 
         ArrayList<String> tokens = new ArrayList<>();
 
-        String regexBasic = "[\\*\\(\\)\\+\\|\\{\\}\\[\\]!\"\\;\'<>,\\\n]";
-        String regexUrls = "[http:// | www\\. | http://www\\. | https://www\\. | https://]";
+        String regexBasic = "[*()+|{}\\[\\]!\";\'<>,\n:%&_#?]";
+//        String regexUrls = "[http://|www.|http://www.|https://www.|https://]";
         text = text.replaceAll(regexBasic, " ");
-        text = text.replaceAll(regexUrls, " ");
+//        text = text.replaceAll(regexUrls, " ");
 
         text = text.toLowerCase();
 
@@ -75,6 +76,10 @@ class DocumentParser {
         for (String titleToken : titleTokens) {
             InvertedIndex.createInvertedIndex(docId, titleToken, "t");
         }
+
+        text = text.replaceAll("[^\\x00-\\x7F]", " ");
+        Charset charset = Charset.forName("UTF-8");
+        text = charset.decode(charset.encode(text)).toString();
 
         Matcher infoboxMatcher = regexPatterns.get("infobox").matcher(text);
         StringBuilder infoboxTexts = new StringBuilder();
@@ -147,8 +152,6 @@ class DocumentParser {
         for (int i = 0; i < textBodyTokens.size(); i++) {
             InvertedIndex.createInvertedIndex(docId, textBodyTokens.get(i), "b");
         }
-
-//        LOGGER.log(Level.INFO, "Page : " + docId);
 
     }
 
