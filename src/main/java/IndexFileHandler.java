@@ -24,15 +24,10 @@ class IndexFileHandler {
             BufferedWriter bufferedWriterForSecondaryIndex = new BufferedWriter(new FileWriter(secondaryFileName, true));
 
             String line;
-            int lineCount = 0;
             while ((line = bufferedReader.readLine()) != null) {
 
-                lineCount++;
-
                 // Create smaller files of 30MB each from the large index file
-                if (lineCount > 50) {
-
-                    lineCount = 0;
+                if (new File(outputIndexFileName).length() > 30000000) {
 
                     // Close the current BufferedWriter
                     bufferedWriter.close();
