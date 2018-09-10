@@ -108,7 +108,7 @@ public class QueryHandler {
         initializeDocTitleMap();
 
         QueryResultsHandler.fieldPattern = Pattern.compile("[A-Za-z]:");
-        QueryResultsHandler.booleanQueryPattern = Pattern.compile("\b and \b|\b or \b|\b not \b");
+        QueryResultsHandler.booleanQueryPattern = Pattern.compile("AND|OR|NOT");
 
 
         while (true) {
@@ -119,7 +119,7 @@ public class QueryHandler {
                 break;
             }
 
-            ArrayList<String> results = null;
+            ArrayList<String> results;
             long start = System.currentTimeMillis();
 
             QueryResultsHandler handler = new QueryResultsHandler();

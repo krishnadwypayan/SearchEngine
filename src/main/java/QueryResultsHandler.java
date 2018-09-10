@@ -378,7 +378,7 @@ public class QueryResultsHandler {
         TreeMap<Integer, Double> result = new TreeMap<>();
 
         switch (boolExp) {
-            case "and":
+            case "AND":
 
                 for (Integer docId : firstMap.keySet()) {
                     if (secondMap.keySet().contains(docId)) {
@@ -387,7 +387,7 @@ public class QueryResultsHandler {
                 }
 
                 break;
-            case "or":
+            case "OR":
 
                 result.putAll(firstMap);
 
@@ -401,7 +401,7 @@ public class QueryResultsHandler {
                 }
 
                 break;
-            case "not":
+            case "NOT":
 
                 for (Integer docId : firstMap.keySet()) {
                     if (!secondMap.keySet().contains(docId)) {
@@ -419,7 +419,7 @@ public class QueryResultsHandler {
     }
     
     // Boolean queries will be of the form "abc and pqrs or xyz"
-    public ArrayList<String> getQueryResultsBoolean(String query) {
+    ArrayList<String> getQueryResultsBoolean(String query) {
         ArrayList<String> results = new ArrayList<>();
 
         Matcher booleanMatcher = booleanQueryPattern.matcher(query);
@@ -429,7 +429,7 @@ public class QueryResultsHandler {
             boolExpressions.add(booleanMatcher.group());
         }
 
-        String[] queryTerms = query.split("\b and \b|\b or \b|\b not \b");
+        String[] queryTerms = query.split(" AND | OR | NOT ");
 
         // Store each queryTerm's postingsList in this list and then pick two
         // postingsList at a time from this list and apply the boolean condition.
@@ -440,28 +440,31 @@ public class QueryResultsHandler {
                 continue;
             }
 
-            String postingsList = getPostingsList(queryTerm);
-
-            if (postingsList.equals("$#$ No Results Found $#$")) {
-                results.add("No Results Found");
-                return results;
-            }
-
-            String[] docs = postingsList.split("\\|");
-            int numDocs = docs.length;
-            double idf = Math.log(((double) QueryHandler.countPages / numDocs));
-
+            ArrayList<String> queryTermTokens = DocumentParser.tokenize(queryTerm);
             HashMap<Integer, Double> docsList = new HashMap<>();
+            for (String token : queryTermTokens) {
+                String postingsList = getPostingsList(token);
 
-            for (String doc : docs) {
-                // Split the doc by "-" to get (docId, termFreq, postingsList)
-                String[] docElements = doc.split("-");
+                if (postingsList.equals("$#$ No Results Found $#$")) {
+                    results.add("No Results Found");
+                    return results;
+                }
 
-                double tf_idf = Integer.parseInt(docElements[1]) * idf;
-                docsList.put(Integer.parseInt(docElements[0]), tf_idf);
+                String[] docs = postingsList.split("\\|");
+                int numDocs = docs.length;
+                double idf = Math.log(((double) QueryHandler.countPages / numDocs));
+
+                for (String doc : docs) {
+                    // Split the doc by "-" to get (docId, termFreq, postingsList)
+                    String[] docElements = doc.split("-");
+
+                    double tf_idf = Integer.parseInt(docElements[1]) * idf;
+                    docsList.put(Integer.parseInt(docElements[0]), tf_idf);
+                }
             }
 
             queryTermPostingsList.add(docsList);
+
         }
 
         TreeMap<Integer, Double> boolExpEvalResult = null;
