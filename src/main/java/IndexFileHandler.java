@@ -26,8 +26,12 @@ class IndexFileHandler {
             String line;
             while ((line = bufferedReader.readLine()) != null) {
 
-                // Create smaller files of 30MB each from the large index file
-                if (new File(outputIndexFileName).length() > 30000000) {
+                if (new File(outputIndexFileName).length() < 30000000) {
+                    // Write the line to the small index file and the line offset to the offset file.
+                    bufferedWriter.write(line + "\n");
+                }
+                else {
+                    // Create smaller files of 30MB each from the large index file
 
                     // Close the current BufferedWriter
                     bufferedWriter.close();
@@ -46,9 +50,15 @@ class IndexFileHandler {
                     bufferedWriter = new BufferedWriter(new FileWriter(outputIndexFileName));
                 }
 
-                // Write the line to the small index file and the line offset to the offset file.
-                bufferedWriter.write(line + "\n");
             }
+
+            // For the last pages
+            // Create the offsetFile for the new index file
+            String offsetFileName = SearchEngineMain.OFFSETS_PATH + "offset_" + outputIndexCount + ".txt";
+            createOffsetFile(outputIndexFileName, offsetFileName);
+
+            // Update the secondary index file for the new offset file
+            createSecondaryIndex(offsetFileName, bufferedWriterForSecondaryIndex);
 
             bufferedWriterForSecondaryIndex.close();
 

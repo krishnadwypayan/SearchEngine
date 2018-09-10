@@ -26,10 +26,10 @@ class DocumentParser {
 
         ArrayList<String> tokens = new ArrayList<>();
 
-        String regexBasic = "[*()+|{}\\[\\]!\";\'<>,\n:%&_#?]";
-//        String regexUrls = "[http://|www.|http://www.|https://www.|https://]";
+        String regexBasic = "[*()+|{}\\[\\]!\";\'<>,\n:%&_#?~\\\\]";
+        String regexUrls = "http://|www.|http://www.|https://www.|https://";
         text = text.replaceAll(regexBasic, " ");
-//        text = text.replaceAll(regexUrls, " ");
+        text = text.replaceAll(regexUrls, " ");
 
         text = text.toLowerCase();
 
@@ -39,12 +39,13 @@ class DocumentParser {
         String[] tokensOnSplit = text.split(" ");
 
         for (String token : tokensOnSplit) {
+            token = token.trim();
             if (token.length() > 2 && !stopWords.isStopWord(token)) {
 
-                if ((token.length() > 7 && token.substring(0, 7).equals("http://")) || token.contains(".")) {
-                    tokens.add(token);
-                    continue;
-                }
+//                if ((token.length() > 7 && token.substring(0, 7).equals("http://")) || token.contains(".")) {
+//                    tokens.add(token);
+//                    continue;
+//                }
 
                 String stemmedWord = stemmer.stem(token);
                 if (!stemmedWord.equals("notenglish")) {

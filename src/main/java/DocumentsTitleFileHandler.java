@@ -19,7 +19,11 @@ public class DocumentsTitleFileHandler {
             String line;
             while ((line = bufferedReader.readLine()) != null) {
 
-                if (new File(outputIndexFileName).length() > 10000000) {
+                if (new File(outputIndexFileName).length() < 10000000) {
+                    // Write the line to the small index file and the line offset to the offset file.
+                    bufferedWriter.write(line + "\n");
+                }
+                else {
 
                     // Close the current BufferedWriter
                     bufferedWriter.close();
@@ -33,9 +37,12 @@ public class DocumentsTitleFileHandler {
                     bufferedWriter = new BufferedWriter(new FileWriter(outputIndexFileName));
                 }
 
-                // Write the line to the small index file and the line offset to the offset file.
-                bufferedWriter.write(line + "\n");
             }
+
+            // Close the current BufferedWriter
+            bufferedWriter.close();
+
+            createSecondaryIndex(outputIndexFileName, secondaryIndexBufferedWriter);
 
             secondaryIndexBufferedWriter.close();
 
