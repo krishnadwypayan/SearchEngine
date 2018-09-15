@@ -348,7 +348,7 @@ class Stemmer
 
         for (int i = 0; i < word.length(); i++) {
             char ch = word.charAt(i);
-            if (ch < 0 || ch >= 128) {
+            if (ch >= 128) {
                 return "notenglish";
             }
             s.add(ch);

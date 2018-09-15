@@ -1,5 +1,5 @@
-import org.javatuples.Triplet;
-
+import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.regex.Matcher;
@@ -10,28 +10,27 @@ class DocumentParser {
     private HashMap<String, Pattern> regexPatterns;
 
     private int docId;
+    private String title;
     private String text;
 
-    DocumentParser(Document document, HashMap<String, Pattern> regexPatterns) {
 
+    DocumentParser(Document document, HashMap<String, Pattern> regexPatterns) {
         this.regexPatterns = regexPatterns;
 
         this.docId = document.getId();
+        this.title = document.getTitle();
         this.text = document.getText();
-
-        Triplet<String, Integer, String> docDetailsTriplet
-                = Triplet.with(document.getTitle(), document.getContributorId(), document.getContributorUsername());
-
-        InvertedIndex.docMetadataMap.put(docId, docDetailsTriplet);
-
     }
 
-    private ArrayList<String> tokenize(String text) {
+    static ArrayList<String> tokenize(String text) {
 
         ArrayList<String> tokens = new ArrayList<>();
 
-        String regexBasic = "[\\*\\(\\)\\+\\|\\{\\}\\[\\]!\"\\;\'<>,\\\n]";
+        String regexBasic = "[*()+|{}\\[\\]!\";\'<>,\n:%&_#?~\\\\]";
+        String regexUrls = "http://|www.|http://www.|https://www.|https://";
         text = text.replaceAll(regexBasic, " ");
+        text = text.replaceAll(regexUrls, " ");
+
         text = text.toLowerCase();
 
         StopWords stopWords = StopWords.getInstance();
@@ -40,12 +39,13 @@ class DocumentParser {
         String[] tokensOnSplit = text.split(" ");
 
         for (String token : tokensOnSplit) {
+            token = token.trim();
             if (token.length() > 2 && !stopWords.isStopWord(token)) {
 
-                if (token.length() > 7 && token.substring(0, 7).equals("http://")) {
-                    tokens.add(token);
-                    continue;
-                }
+//                if ((token.length() > 7 && token.substring(0, 7).equals("http://")) || token.contains(".")) {
+//                    tokens.add(token);
+//                    continue;
+//                }
 
                 String stemmedWord = stemmer.stem(token);
                 if (!stemmedWord.equals("notenglish")) {
@@ -59,11 +59,28 @@ class DocumentParser {
 
     void parseDocument() {
 
+        // Write the title and docId to a file
+        try {
+            SearchEngineMain.bufferedWriterForDocTitleMap.write(docId + ":" + title + "\n");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        ArrayList<String> titleTokens;
         ArrayList<String> externalLinksTokens;
         ArrayList<String> infoboxTokens;
         ArrayList<String> referenceTokens;
         ArrayList<String> categoryTokens;
         ArrayList<String> textBodyTokens;
+
+        titleTokens = tokenize(title);
+        for (String titleToken : titleTokens) {
+            InvertedIndex.createInvertedIndex(docId, titleToken, "t");
+        }
+
+        text = text.replaceAll("[^\\x00-\\x7F]", " ");
+        Charset charset = Charset.forName("UTF-8");
+        text = charset.decode(charset.encode(text)).toString();
 
         Matcher infoboxMatcher = regexPatterns.get("infobox").matcher(text);
         StringBuilder infoboxTexts = new StringBuilder();
@@ -112,7 +129,13 @@ class DocumentParser {
         while (externalLinksMatcher.find()) {
             String externalLinksText = externalLinksMatcher.group();
             externalLinksIndex = externalLinksMatcher.start();
-            text = text.substring(0, externalLinksIndex);
+
+            try {
+                text = text.substring(0, externalLinksIndex);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
 
             externalLinksTokens = tokenize(externalLinksText);
             for (int i = 0; i < externalLinksTokens.size(); i++) {
@@ -128,7 +151,7 @@ class DocumentParser {
 
         textBodyTokens = tokenize(text);
         for (int i = 0; i < textBodyTokens.size(); i++) {
-            InvertedIndex.createInvertedIndex(docId, textBodyTokens.get(i), "t");
+            InvertedIndex.createInvertedIndex(docId, textBodyTokens.get(i), "b");
         }
 
     }
